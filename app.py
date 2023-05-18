@@ -3,10 +3,12 @@ from flask_cors import CORS,cross_origin
 import requests
 from bs4 import BeautifulSoup as bs
 from urllib.request import urlopen as uReq
+# when we create a new environment, all packages can install at a time if all the package name are listed in txt file
+# command = pip install -r filename.txt
 
 app = Flask(__name__)
 
-@app.route('/',methods=['GET'])  # route to display the home page
+@app.route('/',methods=['GET'])  # route to display the home page (/ - local host )
 @cross_origin()
 def homePage():
     return render_template("index.html")
@@ -18,16 +20,16 @@ def index():
         try:
             searchString = request.form['content'].replace(" ","")
             flipkart_url = "https://www.flipkart.com/search?q=" + searchString
-            uClient = uReq(flipkart_url)
-            flipkartPage = uClient.read()
+            uClient = uReq(flipkart_url)  # uReq will open any url it is in urllib library
+            flipkartPage = uClient.read() # gives html code of that page
             uClient.close()
             flipkart_html = bs(flipkartPage, "html.parser")
             bigboxes = flipkart_html.findAll("div", {"class": "_1AtVbE col-12-12"})
             del bigboxes[0:3]
             box = bigboxes[0]
             productLink = "https://www.flipkart.com" + box.div.div.div.a['href']
-            prodRes = requests.get(productLink)
-            prodRes.encoding='utf-8'
+            prodRes = requests.get(productLink)  # it is same as uReq infact requests is better for performance
+            prodRes.encoding='utf-8'  # it maintains in english
             prod_html = bs(prodRes.text, "html.parser")
             print(prod_html)
             commentboxes = prod_html.find_all('div', {'class': "_16PBlm"})
@@ -79,5 +81,5 @@ def index():
         return render_template('index.html')
 
 if __name__ == "__main__":
-    #app.run(host='127.0.0.1', port=8001, debug=True)
-	app.run(debug=True)
+    app.run(host='127.0.0.1', port=8001, debug=True)
+	#app.run(debug=True)
